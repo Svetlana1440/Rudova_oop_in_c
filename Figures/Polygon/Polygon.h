@@ -13,6 +13,27 @@ class Polygon : public GeometricFigure {
 private:
     vector<Point> vertices;
 public:
+    Polygon(vector<Point> _vertices);
+
+    double calc_area() override {}
+
+    double calc_perimeter() override {}
+
+    void name() override {}
+
+private:
+    double distance(Point p1, Point p2) {}
+};
+
+#endif
+
+
+template <class T>
+// Polygon class
+class Polygon : public GeometricFigure {
+private:
+    vector<Point> vertices;
+public:
     Polygon(vector<Point> _vertices) : vertices(_vertices) {}
 
     double calc_area() override {

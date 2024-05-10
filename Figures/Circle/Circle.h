@@ -5,6 +5,24 @@
 #define  CIRCLE_H
 
 
+
+template <class T>
+// Circle class
+class Circle : public GeometricFigure {
+private:
+    Point center;
+    T radius;
+public:
+    Circle(Point _center, T _radius);
+
+    double calc_area() override {}
+
+    double calc_perimeter() override {}
+
+    void name() override {}
+};
+
+
 template <class T>
 // Circle class
 class Circle : public GeometricFigure {
@@ -26,7 +44,3 @@ public:
         cout << "Circle" << endl;
     }
 };
-
-
-
-#endif
