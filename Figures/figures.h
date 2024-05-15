@@ -21,9 +21,9 @@ class GeometricFigure {
 public:
     virtual double calc_area() = 0;
     virtual double calc_perimeter() = 0;
-    virtual void name() = 0;
+    virtual string name() = 0;
 };
 
 //calcDistance
-double calcDistance(const Point& pa, const Point& pb);
+double distance(Point& p1, Point& p2);
 #endif

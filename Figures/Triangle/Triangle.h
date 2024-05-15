@@ -4,57 +4,50 @@
 #define TRIANGLE_H
 
 template <class T>
-// Triangle class
 class Triangle : public GeometricFigure {
 private:
+    T side1, side2, side3;
     Point vertex1, vertex2, vertex3;
 public:
+    Triangle(T _side1, T _side2, T _side3);
     Triangle(Point _vertex1, Point _vertex2, Point _vertex3);
 
-    double calc_area() override {
-        double a = distance(vertex1, vertex2);
-        double b = distance(vertex2, vertex3);
-        double c = distance(vertex3, vertex1);
-        double s = (a + b + c) / 2;
-        return sqrt(s * (s - a) * (s - b) * (s - c));
-    }
+    double calc_area();
 
-    double calc_perimeter() override {}
+    double calc_perimeter();
 
-    void name() override {}
+    string name();
 
-private:
-    double distance(Point p1, Point p2) {}
 };
 
 template <class T>
-// Triangle class
-class Triangle : public GeometricFigure {
-private:
-    Point vertex1, vertex2, vertex3;
-public:
-    Triangle(Point _vertex1, Point _vertex2, Point _vertex3) : vertex1(_vertex1), vertex2(_vertex2), vertex3(_vertex3) {}
+Triangle<T>::Triangle(Point _vertex1, Point _vertex2, Point _vertex3) {
+    side1 = distance(_vertex1, _vertex2);
+    side2 = distance(_vertex2, _vertex3);
+    side3 = distance(_vertex3, _vertex1);
+}
 
-    double calc_area() override {
-        double a = distance(vertex1, vertex2);
-        double b = distance(vertex2, vertex3);
-        double c = distance(vertex3, vertex1);
-        double s = (a + b + c) / 2;
-        return sqrt(s * (s - a) * (s - b) * (s - c));
-    }
+template <class T>
+double Triangle<T>::calc_area(){
+    double square = (side1 + side2 + side3) / 2;
+    return sqrt(square * (square - side1) * (square - side2) * (square - side3));
+}
 
-    double calc_perimeter() override {
-        return distance(vertex1, vertex2) + distance(vertex2, vertex3) + distance(vertex3, vertex1);
-    }
+template <class T>
+double Triangle<T>::calc_perimeter() {
+    return side1 + side2 + side3;
+}
 
-    void name() override {
-        cout << "Triangle" << endl;
-    }
+template <class T>
+string Triangle<T>::name(){
+    return "Triangle";
+}
 
-private:
-    double distance(Point p1, Point p2) {
-        return sqrt((p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y));
-    }
-};
+template <class T>
+Triangle<T>::Triangle(T _side1, T _side2, T _side3) {
+    side1 = _side1;
+    side2 = _side2;
+    side3 = _side3;
+}
 
 #endif

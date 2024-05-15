@@ -1,47 +1,56 @@
 #pragma once
 #include "../figures.h"
+const double pipi = 3.141592;
 
 #ifndef ELLIPSE_H
 #define ELLIPSE_H
 
 template <class T>
-// Ellipse class
 class Ellipse : public GeometricFigure {
 private:
     Point center;
-    T semi_major_axis;
-    T semi_minor_axis;
+    T radius1;
+    T radius2;
 public:
-    Ellipse(Point _center, T _semi_major_axis, T _semi_minor_axis);
+    Ellipse(Point _center, T _radius1, T _radius2);
+    Ellipse(T center_x, T center_y, T _radius1, T _radius2);
 
     double calc_area();
 
     double calc_perimeter();
 
-    void name();
+    string name();
 };
 
 
 template <class T>
-// Ellipse class
-class Ellipse : public GeometricFigure {
-private:
-    Point center;
-    T semi_major_axis;
-    T semi_minor_axis;
-public:
-    Ellipse(Point _center, T _semi_major_axis, T _semi_minor_axis) : center(_center), semi_major_axis(_semi_major_axis), semi_minor_axis(_semi_minor_axis) {}
+double Ellipse<T>::calc_area() {
+    return pipi * radius1 * radius2;
+}
 
-    double calc_area() override {
-        return M_PI * semi_major_axis * semi_minor_axis;
-    }
+template <class T>
+double Ellipse<T>::calc_perimeter() {
+    return 2 * pipi * sqrt((radius1 * radius2 + radius1 * radius2) / 2);
+}
 
-    double calc_perimeter() override {
-        return 2 * M_PI * sqrt((semi_major_axis * semi_major_axis + semi_minor_axis * semi_minor_axis) / 2);
-    }
+template <class T>
+string Ellipse<T>::name() {
+    return "Ellipse";
+}
 
-    void name() override {
-        cout << "Ellipse" << endl;
-    }
-};
+template <class T>
+Ellipse<T>::Ellipse(Point _center, T _radius1, T _radius2) {
+    center = _center;
+    radius1 = _radius1;
+    radius2 = _radius2;
+}
+
+template <class T>
+Ellipse<T>::Ellipse(T center_x, T center_y, T _radius1, T _radius2) {
+    center.y = center_y;
+    center.x = center_x;
+    radius1 = _radius1;
+    radius2 = _radius2;
+}
+
 #endif

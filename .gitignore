@@ -18,3 +18,10 @@ Datetime/.vs/Datetime/v17/.suo
 *.sln
 *.recipe
 *.exe
+.vs/Rudova_oop_in_c/v17/.wsuo
+*.sqlite
+Figures/.vs/Figures/v17/.suo
+Figures/.vs/Figures/v17/.wsuo
+*.opendb
+/Figures/.vs
+/.vs
