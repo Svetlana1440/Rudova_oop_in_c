@@ -1,46 +1,412 @@
-#include <iostream>
+п»ї#include <iostream>
 #include <math.h>
+#include "../Rational/Rational.h"
 using namespace std;
 
-//класс Polynom
-class Polynom{
+// Polynom
+template <class T>
+class Polynom {
 private:
-
+	unsigned int deg;
+	T* koef;  
 public:
-	void CorrectDeg(); // функция корректировки степени полинома
-	unsigned int deg; //степень полинома
-	double *koef; //указатель на массив коэффициентов полинома
-				  //koef[i] - коэффициент при i-й степени,
-				  //koef[0] - коэффициент при нулевой степени
-	Polynom(); //конструктор без параметров
-	Polynom(unsigned int); //конструктор с параметром
-	Polynom(unsigned int, double*); //конструктор с параметрами
-	Polynom(const Polynom &); //копирующий контсруктор
-	~Polynom(); //деструктор
+	void CorrectDeg();        
+	Polynom(); 
+	Polynom(unsigned int new_deg); 
+	Polynom(unsigned int, T* new_koef);  
 
-	unsigned int GetDeg(); //функция получения степени полинома
-	double GetKoef(unsigned int); //функция получения коэффициента при i-й степени
-	unsigned int SetKoef(double, unsigned int); //функция задания коэффициента при i-й 
-												//степени, возвращает степень полинома
-	Polynom operator + (const Polynom &);	//оператор сложения двух полиномов
-	Polynom operator - (const Polynom& t) const; //оператор вычитания двух полиномов
-	Polynom operator = (const Polynom &);	//оператор присваивания
-	friend Polynom MultConst(double, Polynom &); //дружественная функция умножения полинома
-											  //на константу
-	Polynom operator * (const double K) const;//умножение полинома на число
-	Polynom operator * (const Polynom& t) const;//умножение полинома на полином
+	Polynom(const Polynom<T>& t);
+	~Polynom();
 
-	Polynom operator / (const Polynom&);	// оператор деления двух полиномов с получением частного
-	Polynom operator % (const Polynom&);	// оператор деления двух полиномов с получением остатка
+	unsigned int GetDeg() const; 
+	T GetKoef(unsigned int i) const; 
+	void SetKoef(T new_koef, unsigned int i);
+	void ReplaceKoef(T new_koef);
+	Polynom operator + (const Polynom<T>& t) const;	 
+	Polynom operator - (const Polynom<T>& t) const;
+	Polynom operator = (const Polynom<T>& t);
 
-	Polynom Divide(const Polynom& divisor, Polynom& quotient, Polynom& remainder);	// функция деления двух полиномов с получением частного и остатка отдельно
+	template <class T>
+	friend Polynom MultConst(double, Polynom<T>&);   
 
-	Polynom Derivative(int order);  // Функция для взятия производной заданного порядка
+	Polynom operator * (const T K) const;
+	Polynom operator * (const Polynom<T>& t) const; 
+
+	Polynom operator / (const Polynom<T>& t);
+	Polynom operator % (const Polynom<T>& t);	  
+
+	Polynom Divide( const Polynom<T>& divisor, Polynom<T>& quotient, Polynom<T>& remainder);        
+
+	Polynom Derivative(int order);    
 
 	Polynom Integrate();
 
-	friend istream& operator>>(istream& in, Polynom& r);
-	friend ostream& operator<<(ostream& out, const Polynom& r);
+	template <class T>
+	friend istream& operator>>(istream& in, Polynom<T>& r);
+	template <class T>
+	friend ostream& operator<<(ostream& out, const Polynom<T>& r);
+	void delete_koef();
 };
-
 int factorial(int number);
+
+// РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ Р±РµР· РїР°СЂР°РјРµС‚СЂРѕРІ: СЃРѕР·РґР°РµС‚СЃСЏ РїРѕР»РёРЅРѕРј РЅСѓР»РµРІРѕР№ СЃС‚РµРїРµРЅРё
+// СЃ РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРј РїСЂРё РЅСѓР»РµРІРѕР№ СЃС‚РµРїРµРЅРё СЂР°РІРЅС‹Рј РЅСѓР»СЋ      
+template <class T>
+Polynom<T>::Polynom() {
+	deg = 0;
+	koef = new T[deg + 1];    
+	koef[0] = 0.0;
+}
+
+//Р­С‚РѕС‚ РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РїСЂРёРЅРёРјР°РµС‚ С‚РѕР»СЊРєРѕ РѕРґРёРЅ РїР°СЂР°РјРµС‚СЂ - new_deg (СЃС‚РµРїРµРЅСЊ СЃРѕР·РґР°РІР°РµРјРѕРіРѕ РїРѕР»РёРЅРѕРјР°). 
+// РћРЅ РёРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ СЃС‚РµРїРµРЅСЊ РїРѕР»РёРЅРѕРјР° СЃ Р·Р°РґР°РЅРЅС‹Рј Р·РЅР°С‡РµРЅРёРµРј Рё СЃРѕР·РґР°РµС‚ РјР°СЃСЃРёРІ РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ, 
+// СѓСЃС‚Р°РЅР°РІР»РёРІР°СЏ РІСЃРµ РєРѕСЌС„С„РёС†РёРµРЅС‚С‹ РІ РЅР°С‡Р°Р»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ СЂР°РІРЅРѕРµ РЅСѓР»СЋ.
+template <class T>
+Polynom<T>::Polynom(unsigned int new_deg) {
+	deg = new_deg;
+	koef = new T[deg + 1];
+	for (int i = 0; i <= deg; i++)
+		koef[i] = 0;   
+}
+
+// РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ СЃ РїР°СЂР°РјРµС‚СЂР°РјРё
+// new_deg - СЃС‚РµРїРµРЅСЊ СЃРѕР·РґР°РІР°РµРјРѕРіРѕ РїРѕР»РёРЅРѕРјР°
+// newkoef - СѓРєР°Р·Р°С‚РµР»СЊ РЅР° new_deg+1 - СЌР»РµРјРµРЅС‚РЅС‹Р№ РјР°СЃСЃРёРІ СЃ РєРѕСЌС„С„РёС†РёРµРЅС‚Р°РјРё 
+// 	 		 РїРѕР»РёРЅРѕРјР°, РіРґРµ newkoef[i] - РєРѕС„С„РёС†РёРµРЅС‚ РїСЂРё i-Р№ СЃС‚РµРїРµРЅРё
+//			 Рё newkoef[0] - РєРѕСЌС„С„РёС†РёРµРЅС‚ РїСЂРё РЅСѓР»РµРІРѕР№ СЃС‚РµРїРµРЅРё
+// Р’ СЂРµР·СѓР»СЊС‚Р°С‚Рµ СЃС‚РµРїРµРЅСЊ РїРѕР»РёРЅРѕРјР° Р±СѓРґРµС‚ РЅР°РёР±РѕР»СЊС€РёРј РЅРѕРјРµСЂРѕРј РЅРµРЅСѓР»РµРІРѕРіРѕ
+// СЌР»РµРјРµРЅС‚Р° РјР°СЃСЃРёРІР° new_koef Рё РјРµРЅСЊС€Рµ РёР»Рё СЂР°РІРЅР° new_deg (РїРѕ РѕРїСЂРµРґРµР»РµРЅРёСЋ СЃС‚РµРїРµРЅРё РїРѕР»РёРЅРѕРјР°)
+template <class T>
+Polynom<T>::Polynom(unsigned int new_deg, T* new_koef) {
+	deg = 0;
+	for (int i = 0; i <= new_deg; i++)
+		if (new_koef[i] != 0) deg = i;	  
+	koef = new T[deg + 1];
+	for (int i = 0; i <= deg; i++)
+		koef[i] = new_koef[i]; 
+}
+
+//РєРѕРїРёСЂСѓСЋС‰РёР№ РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ
+template <class T>
+Polynom<T>::Polynom(const Polynom<T>& f) {
+	deg = f.deg;
+	koef = new T[deg + 1];
+	for (int i = 0; i <= deg; i++)
+		koef[i] = f.koef[i];
+}
+
+//РґРµСЃС‚СЂСѓРєС‚РѕСЂ
+template <class T>
+Polynom<T>::~Polynom() {
+	delete[] koef;
+}
+  
+// С„СѓРЅРєС†РёСЏ РїРѕР»СѓС‡РµРЅРёСЏ СЃС‚РµРїРµРЅРё РїРѕР»РёРЅРѕРјР°
+template <class T>
+unsigned int Polynom<T>::GetDeg() const {
+	return deg;
+}
+
+// С„СѓРЅРєС†РёСЏ РїРѕР»СѓС‡РµРЅРёСЏ РєРѕСЌС„С„РёС†РёРµРЅС‚Р° РїСЂРё i-Р№ СЃС‚РµРїРµРЅРё
+template <class T>
+T Polynom<T>::GetKoef(unsigned int i) const {
+	if (i <= deg)
+		return koef[i];
+	else
+		return 0.0;
+}
+
+// С„СѓРЅРєС†РёСЏ Р·Р°РґР°РЅРёСЏ РєРѕСЌС„С„РёС†РёРµРЅС‚Р° РїСЂРё i-Р№ СЃС‚РµРїРµРЅРё
+template <class T>
+void Polynom<T>::SetKoef(T new_koef, unsigned int i) {
+	if (i <= deg) koef[i] = new_koef;
+	CorrectDeg();
+}
+
+//Р—Р°РјРµРЅР° koef
+template <class T>
+void Polynom<T>::ReplaceKoef(T new_koef) {
+	koef = new_koef;
+	CorrectDeg();
+}
+
+//РѕРїРµСЂР°С‚РѕСЂ СЃР»РѕР¶РµРЅРёСЏ РґРІСѓС… РїРѕР»РёРЅРѕРјРѕРІ
+template <class T>
+Polynom<T> Polynom<T>::operator + (const Polynom<T>& t) const {
+	int i;
+	Polynom<T>* result;
+
+	if (deg >= t.deg) {	      
+		result = new Polynom<T>(deg, koef);
+		for (i = 0; i <= t.deg; i++)
+			result->koef[i] = result->koef[i] + t.koef[i];
+	}
+	else {		  
+		result = new Polynom<T>(t.deg, t.koef);
+		for (i = 0; i <= deg; i++)
+			result->koef[i] = result->koef[i] + koef[i];
+	}
+	result->CorrectDeg();
+	return *result;
+}
+
+// РћРїРµСЂР°С‚РѕСЂ РІС‹С‡РёС‚Р°РЅРёСЏ РґРІСѓС… РїРѕР»РёРЅРѕРјРѕРІ
+template <class T>
+Polynom<T> Polynom<T>::operator - (const Polynom<T>& t) const {
+	int i;
+	Polynom<T> result;
+
+	if (deg >= t.deg) {        
+		result = Polynom<T>(deg);
+		for (i = 0; i <= deg; i++)
+			result.koef[i] = koef[i];
+		for (i = 0; i <= t.deg; i++)
+			result.koef[i] -= t.koef[i];
+	}
+	else {        
+		result = Polynom<T>(t.deg);
+		for (i = 0; i <= t.deg; i++)
+			result.koef[i] = -t.koef[i];
+		for (i = 0; i <= deg; i++)
+			result.koef[i] += koef[i];
+	}
+	result.CorrectDeg();
+	return result;
+}
+
+//РѕРїРµСЂР°С‚РѕСЂ РїСЂРёСЃРІР°РёРІР°РЅРёСЏ
+template <class T>
+Polynom<T> Polynom<T>::operator = (const Polynom<T>& t) {
+	deg = t.deg;
+	delete[] koef;
+	koef = new T[deg + 1];
+	for (int i = 0; i <= deg; i++)
+		koef[i] = t.koef[i];
+	return *this;
+}
+
+//РѕРїРµСЂР°С‚РѕСЂ СѓРјРЅРѕР¶РµРЅРёСЏ РїРѕР»РёРЅРѕРјР° РЅР° С‡РёСЃР»Рѕ
+template <class T>
+Polynom<T> Polynom<T>::operator * (const T K) const {
+	Polynom<T> res = *this;
+	return MultConst(K, res);
+}
+
+//С„СѓРЅРєС†РёСЏ СЂРµР°Р»РёР·СѓСЋС‰Р°СЏ СѓРјРЅРѕР¶РµРЅРёРµ РїРѕР»РёРЅРѕРјР° РЅР° С‡РёСЃР»Рѕ
+template <class T>
+Polynom<T> MultConst(double K, Polynom<T>& t) {
+	if (K == 0) {
+		Polynom<T> result;
+		return result;
+	}
+	else {
+		int deg = t.GetDeg();
+		T* tmp_koef = new T[deg + 1];
+		for (int i = 0; i <= deg; i++)
+			tmp_koef[i] = K * t.GetKoef(i);
+		Polynom<T> result(deg, tmp_koef);
+		delete[] tmp_koef;
+		return result;
+	}
+}
+
+// РћРїРµСЂР°С‚РѕСЂ СѓРјРЅРѕР¶РµРЅРёСЏ РїРѕР»РёРЅРѕРјР° РЅР° РїРѕР»РёРЅРѕРј
+template <class T>
+Polynom<T> Polynom<T>::operator* (const Polynom<T>& t) const {
+	Polynom<T> k = t;
+	Polynom<T> g = *this;
+	unsigned int new_deg = g.deg + k.deg;
+	T* new_koef = new T[new_deg + 1]();
+
+	for (unsigned int i = 0; i <= g.deg; i++) {
+		for (unsigned int j = 0; j <= k.deg; j++) {
+			new_koef[i + j] += g.koef[i] * k.koef[j];
+		}
+	}
+	Polynom<T> result(new_deg, new_koef);
+	delete[] new_koef;
+	return result;
+}
+
+
+int factorial(int number) {
+	int a = 1;
+	for (int i = 1; i <= number; i++) {
+		a *= i;
+	}
+	return a;
+}
+
+// РћРїРµСЂР°С‚РѕСЂ РґРµР»РµРЅРёСЏ РґРІСѓС… РїРѕР»РёРЅРѕРјРѕРІ СЃ РїРѕР»СѓС‡РµРЅРёРµРј С‡Р°СЃС‚РЅРѕРіРѕ
+template <class T>
+Polynom<T> Polynom<T>::operator / (const Polynom<T>& divisor) {
+	Polynom<T> quotient;
+	Polynom<T> remainder;
+	Divide(divisor, quotient, remainder);
+	return quotient;
+}
+
+// РћРїРµСЂР°С‚РѕСЂ РґРµР»РµРЅРёСЏ РґРІСѓС… РїРѕР»РёРЅРѕРјРѕРІ СЃ РїРѕР»СѓС‡РµРЅРёРµРј РѕСЃС‚Р°С‚РєР° 
+template <class T>
+Polynom<T> Polynom<T>::operator % (const Polynom<T>& divisor) {
+	Polynom<T> quotient;
+	Polynom<T> remainder;
+	Divide(divisor, quotient, remainder);
+	return remainder;
+}
+
+// Р¤СѓРЅРєС†РёСЏ РґРµР»РµРЅРёСЏ РґРІСѓС… РїРѕР»РёРЅРѕРјРѕРІ СЃ РїРѕР»СѓС‡РµРЅРёРµРј С‡Р°СЃС‚РЅРѕРіРѕ Рё РѕСЃС‚Р°С‚РєР° РѕС‚РґРµР»СЊРЅРѕ
+template <class T>
+Polynom<T> Polynom<T>::Divide(const Polynom<T>& divisor, Polynom<T>& quotient, Polynom<T>& remainder) {
+	if (divisor.deg == 0 && divisor.koef[0] != 0) {
+		// Р•СЃР»Рё РґРµР»РёС‚РµР»СЊ - РєРѕРЅСЃС‚Р°РЅС‚Р° (РЅРµРЅСѓР»РµРІР°СЏ)
+		double constant = divisor.koef[0];
+		quotient = *this / constant;
+		remainder = Polynom<T>();
+		return remainder;
+	}
+
+	unsigned int dividendDeg = deg;
+	unsigned int divisorDeg = divisor.deg;
+
+	if (dividendDeg < divisorDeg) {  
+		// Р•СЃР»Рё СЃС‚РµРїРµРЅСЊ РґРµР»РёРјРѕРіРѕ РјРµРЅСЊС€Рµ СЃС‚РµРїРµРЅРё РґРµР»РёС‚РµР»СЏ, РІРѕР·РІСЂР°С‰Р°РµРј РЅРѕР»СЊ РІ С‡Р°СЃС‚РЅРѕРј Рё РґРµР»РёРјРѕРµ РІ РѕСЃС‚Р°С‚РєРµ
+		quotient = Polynom<T>();
+		remainder = *this;
+		return remainder;
+	}
+
+	Polynom<T> tmp(*this);
+	Polynom<T> div(divisor);
+
+	quotient = Polynom<T>(dividendDeg - divisorDeg + 1);
+
+	for (unsigned int i = dividendDeg - divisorDeg + 1; i > 0; i--) {
+		quotient.koef[i - 1] = tmp.koef[tmp.deg] / div.koef[div.deg];
+		unsigned int j = 0;
+		for (; j <= div.deg; j++) {
+			tmp.koef[tmp.deg - j] -= quotient.koef[i - 1] * div.koef[div.deg - j];
+		}
+		tmp.CorrectDeg();
+	}
+
+	remainder = tmp;
+	return remainder;
+}
+
+//РџСЂРѕРёР·РІРѕРґРЅС‹Рµ
+template <class T>
+Polynom<T> Polynom<T>::Derivative(int order) {
+	if (order <= 0) {
+		return *this;
+	}
+
+	int resultDeg = deg - order;
+	if (resultDeg < 0) {
+		return Polynom<T>();
+	}
+
+	T* resultKoef = new T[resultDeg + 1];
+
+	for (int i = 0; i <= resultDeg; i++) {
+		resultKoef[i] = koef[i + order] * factorial(i + order) / factorial(i);
+	}
+
+	Polynom<T> result(resultDeg, resultKoef);
+
+	delete[] resultKoef;
+
+	return result;
+}
+
+//РРЅС‚РµРіСЂРёСЂРѕРІР°РЅРёРµ
+template <class T>
+Polynom<T> Polynom<T>::Integrate() {
+	int resultDeg = deg + 1;
+	T* resultKoef = new T[resultDeg + 1];
+
+	resultKoef[0] = 0;  // РљРѕСЌС„С„РёС†РёРµРЅС‚ РїСЂРё СЃРІРѕР±РѕРґРЅРѕРј С‡Р»РµРЅРµ РІСЃРµРіРґР° 0 РїРѕСЃР»Рµ РёРЅС‚РµРіСЂРёСЂРѕРІР°РЅРёСЏ
+
+	for (int i = 1; i <= resultDeg; i++) {
+		resultKoef[i] = koef[i - 1] / i;
+	}
+
+	Polynom<T> result(resultDeg, resultKoef);
+
+	delete[] resultKoef;
+
+	return result;
+}
+
+// С„СѓРЅРєС†РёСЏ РєРѕСЂСЂРµРєС‚РёСЂРѕРІРєРё СЃС‚РµРїРµРЅРё РїРѕР»РёРЅРѕРјР°: РєРѕСЌС„С„РёС†РёРµРЅС‚ 
+// РїСЂРё РјР°РєСЃРёРјР°Р»СЊРЅРѕР№ СЃС‚РµРїРµРЅРё РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ РЅРµРЅСѓР»РµРІС‹Рј
+template <class T>
+void Polynom<T>::CorrectDeg() {
+	while (deg > 0 && koef[deg] == 0) {
+		deg--;
+	}
+}
+
+
+template <class T>
+void Polynom<T>::delete_koef() {
+	delete[] koef;
+}
+
+//РѕРїРµСЂР°С‚РѕСЂ РІРІРѕРґР° РїРѕР»РёРЅРѕРјР°
+template <class T>
+istream& operator>>(istream& in, Polynom<T>& r) {
+	cout << "Input degree: ";
+	in >> r.GetDeg();
+	r.delete_koef();
+	T temp_k = new T[r.GetDeg() + 1];
+	r.ReplaceKoef(T);
+
+	cout << "Input coefficients from lowest to highest degree:" << endl;
+	for (int i = 0; i <= r.GetDeg(); ++i) {
+		cout << "Coefficient for x^" << i << ": ";
+		in >> r.GetKoef(i);
+	}
+	r.CorrectDeg(); // РљРѕСЂСЂРµРєС‚РёСЂСѓРµРј СЃС‚РµРїРµРЅСЊ РїРѕР»РёРЅРѕРјР°
+	return in;
+}
+
+//РѕРїРµСЂР°С‚РѕСЂ РІС‹РІРѕРґР° РїРѕР»РёРЅРѕРјР°
+template <class T>
+std::ostream& operator<<(ostream& out, const Polynom<T>& r) {
+	if (r.GetDeg() == 0 && r.GetKoef(0) == 0) {
+		out << "0";
+		return out;
+	}
+
+	bool firstTerm = true;
+
+	for (int i = r.GetDeg(); i >= 0; --i) {
+		if (r.GetKoef(i) == 0) { continue; }
+
+		if (!firstTerm) {
+			if (r.GetKoef(i) > 0) { out << " + "; }
+			else { out << " - "; }
+		}
+		else {
+			if (r.GetKoef(i) < 0) { out << "-"; }
+			firstTerm = false;
+		}
+
+		T absCoef = abs(r.GetKoef(i));
+
+		if (i == 0) {
+			out << absCoef;
+		}
+		else if (i == 1) {
+			if (absCoef == 1) { out << "X"; }
+			else { out << absCoef << "X"; }
+		}
+		else {
+			if (absCoef == 1) { out << "X^" << i; }
+			else { out << absCoef << "X^" << i; }
+		}
+	}
+
+	return out;
+}
